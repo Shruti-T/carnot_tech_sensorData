@@ -25,7 +25,7 @@
 #### Issue 2 — `sensor_status` case/whitespace inconsistency
 **What:** The flag column has distinct raw values: `OK`, `error`, and `NaN` and 137 rows (4.0%) have a missing `sensor_status`.
 **Decision — Repair.** Strip whitespace and uppercase. This collapses everything to three canonical values: `OK` (3,064), `ERROR` (246), `UNKNOWN` (137 formerly null). This is a trivially safe normalisation.
-Flag as UNKNOWN.\*\* We don't know if the sensor was healthy; treating them as `OK` would silently pollute NDVI analysis. Treating them as `ERROR` and dropping readings would lose legitimate data. Flagging as `UNKNOWN` preserves the row for non-NDVI uses (temperature, rainfall) while excluding them from quality-filtered NDVI analysis downstream.
+Flag as UNKNOWN.\*\* I don't know if the sensor was healthy; treating them as `OK` would silently pollute NDVI analysis. Treating them as `ERROR` and dropping readings would lose legitimate data. Flagging as `UNKNOWN` preserves the row for non-NDVI uses (temperature, rainfall) while excluding them from quality-filtered NDVI analysis downstream.
 
 #### Issue 3 — NDVI values outside physical range `[-1, 1]`
 **What:** 104 rows (3.0%) have `ndvi_value` outside the valid range; values go as low as −1.977 and as high as 1.997. These are not plausible NDVI readings — they indicate sensor faults or unit errors.  
@@ -40,7 +40,7 @@ Flag as UNKNOWN.\*\* We don't know if the sensor was healthy; treating them as `
 - `PARCEL_098` — 20 rows
 - `PARCEL_099` — 20 rows
 **Prevalence:** 40 rows (1.2%).  
-**Decision — Retain.** They are excluded from any join-dependent analyses (e.g., NDVI by crop type, mill-level aggregations). Still, we don't silently destroy time-series data that could be back-filled once the metadata is located. A warning can be emitted at runtime.
+**Decision — Retain.** They are excluded from any join-dependent analyses (e.g., NDVI by crop type, mill-level aggregations). Still, I don't silently destroy time-series data that could be back-filled once the metadata is located. A warning can be emitted at runtime.
 
 ### parcel_metadata.csv (28 raw rows)
 ---
