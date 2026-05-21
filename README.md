@@ -24,7 +24,7 @@
 
 #### Issue 2 — `sensor_status` case/whitespace inconsistency
 **What:** The flag column has distinct raw values: `OK`, `error`, and `NaN` and 137 rows (4.0%) have a missing `sensor_status`.
-**Decision — Repair.** Strip whitespace and upper-case. This collapses everything to three canonical values: `OK` (3,064), `ERROR` (246), `UNKNOWN` (137 formerly-null). This is a trivially safe normalisation.
+**Decision — Repair.** Strip whitespace and uppercase. This collapses everything to three canonical values: `OK` (3,064), `ERROR` (246), `UNKNOWN` (137 formerly null). This is a trivially safe normalisation.
 Flag as UNKNOWN.\*\* We don't know if the sensor was healthy; treating them as `OK` would silently pollute NDVI analysis. Treating them as `ERROR` and dropping readings would lose legitimate data. Flagging as `UNKNOWN` preserves the row for non-NDVI uses (temperature, rainfall) while excluding them from quality-filtered NDVI analysis downstream.
 
 #### Issue 3 — NDVI values outside physical range `[-1, 1]`
@@ -60,14 +60,15 @@ Filter: `sensor_status == OK` and `has_metadata == True`.
 Window: 30 days before sowing_date (exclusive) and 30 days after (inclusive).
 
 ```
- crop_type  mean_ndvi_before  mean_ndvi_after  n_parcels
-   soybean            0.1706           0.3109          4
- sugarcane            0.1775           0.3362         19
-     wheat            0.1761           0.3135          2
+crop_type	    mean_ndvi_before	       mean_ndvi_after	       n_parcels
+sugarcane	    0.17780524344569293	    0.33523370786516854	   19
+soybean       0.17053846153846153	    0.3132758620689655	     4
+wheat	        0.1793125	              0.3050238095238095	     2
 ```
 
-**Interpretation.** All three crops show roughly a doubling of NDVI from the pre-sowing window (~0.17) to the post-sowing window (~0.31–0.34). This is physically consistent: pre-sowing fields are bare soil or residue, while the post-sowing period captures germination and early canopy development. Sugarcane's marginally higher post-sowing value (0.336 vs. ~0.31 for the grain crops) plausibly reflects its faster early leaf-area expansion, though the wheat sample (n=2 parcels) is too small to draw confident conclusions. The uniformity of pre-sowing NDVI across all three crops suggests similar field-preparation practices across mills.
-
+**Interpretation.** 
+NDVI increases after sowing across all crop types, which is consistent with vegetation growth following planting. Sugarcane shows the highest post-sowing NDVI (~0.338), suggesting stronger vegetation development in the first 30 days compared to soybean and wheat. All three crops show roughly a doubling of NDVI from the pre-sowing window (~0.17) to the post-sowing window (~0.31–0.34).
+Sugarcane includes more parcels (19), indicating broader parcel-level coverage in the dataset. Soybean (4 parcels) and wheat (2 parcels) are represented by fewer unique parcels, though the total number of NDVI observations may still be large due to repeated measurements over time.
 ---
 
 ## 4. Production-Readiness Reflection
