@@ -69,6 +69,7 @@ wheat	        0.1793125	              0.3050238095238095	     2
 **Interpretation.** 
 NDVI increases after sowing across all crop types, which is consistent with vegetation growth following planting. Sugarcane shows the highest post-sowing NDVI (~0.338), suggesting stronger vegetation development in the first 30 days compared to soybean and wheat. All three crops show roughly a doubling of NDVI from the pre-sowing window (~0.17) to the post-sowing window (~0.31–0.34).
 Sugarcane includes more parcels (19), indicating broader parcel-level coverage in the dataset. Soybean (4 parcels) and wheat (2 parcels) are represented by fewer unique parcels, though the total number of NDVI observations may still be large due to repeated measurements over time.
+
 ---
 
 ## 4. Production-Readiness Reflection
