@@ -103,3 +103,7 @@ A cron-run Python script has no retry logic, no dependency tracking, no visibili
 **The date parser will encounter a new format and produce NaT without failing.**
 
 The current multi-format parser tries three known formats in sequence and returns `NaT` for anything that doesn't match. If a fourth feed is added with, say, `MM-DD-YYYY`, the parse will silently produce `NaT`, those rows will be dropped, and the only signal will be a marginally lower row count — which could easily be mistaken for a quiet day on the farm.
+
+AI coding tools were used as productivity aids during development:
+- Claude: Used to help draft sections of the README and sanity-check a few rough calculations/interpretations.
+- Databricks Genie: Used for Spark/SQL syntax assistance.
