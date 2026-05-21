@@ -91,11 +91,10 @@ A cron-run Python script has no retry logic, no dependency tracking, no visibili
 
 ### What I'd monitor in production
 
-- **Row count per parcel per day** — alert if any parcel drops to zero readings unexpectedly; could be sensor offline or feed failure.
+- **Row count per parcel per day** — alert if any parcel drops to zero readings unexpectedly; could be a sensor offline or a feed failure.
 - **NDVI null rate** (out-of-range + sensor errors combined) — a sudden spike indicates a sensor firmware issue or satellite coverage gap.
-- **Date parsing failure rate** — if a new upstream feed introduces a fourth date format, this is the first signal.
-- **Orphan parcel rate** — if readings arrive for parcel IDs not in metadata, it means a new parcel was commissioned but metadata wasn't updated; business-critical if it feeds a mill-level report.
-- **Pipeline latency** — how long the daily run takes; a 2× slowdown before it becomes a problem is much easier to investigate than a 10× slowdown under pressure.
+- **Orphan parcel rate** — if readings arrive for parcel IDs not in metadata, it means a new parcel was commissioned, but metadata wasn't updated; business-critical if it feeds a mill-level report.
+- **Pipeline latency** — how long the daily run takes; a 2× slowdown before it becomes a problem is much easier to investigate than a 10× slowdown under pressure. Partition data skew (Skew slows Spark jobs heavily), Sudden table size increase can indicate duplication or bad writes.
 
 ---
 
