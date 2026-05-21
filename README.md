@@ -74,16 +74,18 @@ Sugarcane includes more parcels (19), indicating broader parcel-level coverage i
 
 ## 4. Production-Readiness Reflection
 
-### Three things I'd change for a 100× larger daily pipeline
+### Things I'd change for a 100× larger daily pipeline
 
-**1. Switch to a columnar format and lazy execution.**  
-At 100× scale (~350k rows/day, growing to millions historically) CSV read/write becomes a bottleneck and pandas loads everything into memory eagerly. I'd switch storage to Parquet (partitioned by `date` and `parcel_id` prefix) and use Polars or DuckDB for the transformation step — both operate lazily and avoid materialising full tables unnecessarily. Incremental daily appends then touch only the day's partition, not the entire history.
+**1. Switch to a columnar format.**  
+At 100× scale (~350k rows/day, growing to millions historically), CSV read/write becomes a bottleneck. I'd switch storage to Parquet (partitioned by `date` and `parcel_id` prefix). Incremental daily appends then touch only the day's partition.
 
-**2. Add explicit schema validation at ingestion.**  
-Right now the pipeline discovers problems after the fact. At scale, a bad upstream feed silently corrupting 10% of a day's data is far worse than a fast failure. I'd add a schema contract layer (Pandera or Great Expectations) that runs before any cleaning: assert column types, assert `ndvi_value` is float, assert `sensor_status` is not 100% null, assert date parsability rate > 99%. This makes the pipeline fail loudly and early rather than produce subtly wrong output.
+**2. Handle delayed metadata updates.**
+Sometimes metadata arrives late or gets updated after the main pipeline has already run. I'd add CDC (Change Data Capture) so new or updated metadata rows are picked up automatically and reflected in downstream tables. This avoids full reprocessing and keeps reporting tables up to date.
 
 **3. Parameterise and orchestrate, don't script.**  
-A cron-run Python script has no retry logic, no dependency tracking, no visibility into partial failures. I'd move this into a DAG (Airflow, Prefect, or even a simple cloud workflow). The cleaning step, the join, and the analysis would be separate tasks with defined inputs/outputs, so a metadata-feed failure doesn't re-run the (expensive) readings cleaning step unnecessarily.
+A cron-run Python script has no retry logic, no dependency tracking, no visibility into partial failures. I'd move this into a DAG (Airflow, or even a simple cloud workflow). The cleaning step, the join, and the analysis would be separate tasks with defined inputs/outputs.
+
+
 
 ---
 
@@ -101,6 +103,4 @@ A cron-run Python script has no retry logic, no dependency tracking, no visibili
 
 **The date parser will encounter a new format and produce NaT without failing.**
 
-The current multi-format parser tries three known formats in sequence and returns `NaT` for anything that doesn't match. If a fourth feed is added with, say, `MM-DD-YYYY`, the parse will silently produce `NaT`, those rows will be dropped, and the only signal will be a marginally lower row count — which could easily be mistaken for a quiet day on the farm. Without a hard assertion that parse success rate stays above some threshold (e.g. 99%), this class of error is nearly invisible until someone notices that a whole parcel's history has gone missing.
-
-The fix is one line in schema validation: `assert df['date'].isna().mean() < 0.01`.
+The current multi-format parser tries three known formats in sequence and returns `NaT` for anything that doesn't match. If a fourth feed is added with, say, `MM-DD-YYYY`, the parse will silently produce `NaT`, those rows will be dropped, and the only signal will be a marginally lower row count — which could easily be mistaken for a quiet day on the farm.
